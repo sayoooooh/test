@@ -1,27 +1,109 @@
-<!DOCTYPE html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>MindAR Basic Test</title>
-    <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.6.2/aframe/build/aframe-ar.js"></script> -->
+    <script src="https://unpkg.com/aframe-html-shader@0.2.0/dist/aframe-html-shader.min.js"></script>
+    <script src="http://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <title></title>
+    <style>
+      * {
+        /* 選択禁止 */
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+      }
+      body {
+        height: 100%;
+        width: 100%;
+        position: fixed;
+      }
+    </style>
+    <script>
+        AFRAME.registerComponent("mytarget", {
+          init: function () {
+            var music = new Audio("assets/music.mp3");
+            var play_music_btn = document.getElementById("asset_play-music_btn");
+            var play_flg = 0;
+            music.loop = true;
+            this.el.addEventListener("targetFound", (event) => {
+              play_flg = 1;
+              music.currentTime = 0;
+              music.play();
+              play_music_btn.setAttribute("src", "#asset_music-pause");
+              play_music_btn.setAttribute("visible", true);
+            });
+            this.el.addEventListener("targetLost", (event) => {
+              console.log("target Lostfound");
+              play_music_btn.setAttribute("visible", false);
+            });
+            //音楽再生
+            play_music_btn.addEventListener("click", function (evt) {
+              music.pause();
+              if (play_flg == 1) {
+                play_flg = 0;
+                play_music_btn.setAttribute("src", "#asset_music-play");
+              } else {
+                play_flg = 1;
+                music.currentTime = 0;
+                music.play();
+                play_music_btn.setAttribute("src", "#asset_music-pause");
+              }
+            });
+          },
+        });
+
+    </script>
   </head>
-  <body>
-    <button onclick="startAR()">Start AR</button>
-    <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.2/examples/image-tracking/assets/card-example/card.mind;" embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-box position="0 0 0" scale="0.5 0.5 0.5" color="red"></a-box>
+  <body onCopy="return false;" oncontextmenu="return false;">
+    <!-- ※1 a-scene に mindar-image 属性を追加しマーカーファイル（.mindファイル）のパスを記載-->
+    <a-scene
+      mindar-image="imageTargetSrc: ./assets/target.mind"
+      embedded=""
+      color-space="sRGB"
+      renderer="colorManagement: false, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      inspector=""
+      keyboard-shortcuts=""
+      screenshot=""
+    >
+      <a-camera
+        position="0 0 0"
+        look-controls="enabled: false"
+        cursor="fuse: false; rayOrigin: mouse;"
+        raycaster="far: 10000; objects: .clickable"
+        camera=""
+        rotation=""
+        wasd-controls=""
+      >
+      </a-camera>
+      <a-assets>
+        <a-asset-item
+          id="submarine_gltf"
+          src="./assets/target.glb"
+        ></a-asset-item>
+        <img id="asset_music-play" src="./assets/play.png" />
+        <img id="asset_music-pause" src="./assets/pause.png" />
+      </a-assets>
+      <!-- オークションリンク -->
+      <a-entity id="mytarget" mytarget="" mindar-image-target="targetIndex: 0">
+        <a-entity id="portfolio-panel" position="0 -0.5 0">
+          <a-gltf-model
+            src="#submarine_gltf"
+            position="0 0 0"
+            rotation="0 180 0"
+          ></a-gltf-model>
+        </a-entity>
+        <a-entity id="asset_play-music_panel" position="0 0 0" scale="0.3 0.3 0.3" >
+          <a-image id="asset_play-music_btn" class="clickable" src="#asset_music-play" alpha-test="0.5" position="0 0 0" height="1" width="1" material="" geometry="" visible="false">
+        </a-entity>
       </a-entity>
     </a-scene>
-    <script>
-      function startAR() {
-        const sceneEl = document.querySelector('a-scene');
-        if (sceneEl.systems["mindar-image-system"]) {
-          console.log("Starting MindAR...");
-          sceneEl.systems["mindar-image-system"].start();
-        }
-      }
-    </script>
   </body>
 </html>
